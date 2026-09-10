@@ -11,7 +11,7 @@
             <p class="text-sm text-slate-500 mt-1">Pencatatan peminjaman buku oleh siswa dan proses pengembalian buku.</p>
         </div>
         <div>
-            <a href="{{ route('peminjaman.create') }}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white font-semibold text-sm rounded-xl shadow-md shadow-brand-500/25 hover:shadow-lg hover:shadow-brand-500/30 transition-all cursor-pointer">
+            <a href="{{ route('peminjaman.create') }}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl shadow-md shadow-blue-500/20 hover:shadow-lg hover:shadow-blue-500/25 transition-all cursor-pointer">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                 </svg>
@@ -76,11 +76,11 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-slate-700 font-medium">
-                                {{ $item->tanggal_pinjam?->translatedFormat('d M Y') ?? $item->tanggal_pinjam }}
+                                {{ $item->tanggal_pinjam instanceof \Carbon\CarbonInterface || $item->tanggal_pinjam instanceof \DateTimeInterface ? $item->tanggal_pinjam->translatedFormat('d M Y') : (\Illuminate\Support\Carbon::tryParse($item->tanggal_pinjam)?->translatedFormat('d M Y') ?? $item->tanggal_pinjam) }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-slate-700">
                                 @if($item->tanggal_kembali)
-                                    <span class="text-emerald-700 font-medium">{{ $item->tanggal_kembali?->translatedFormat('d M Y') ?? $item->tanggal_kembali }}</span>
+                                    <span class="text-emerald-700 font-medium">{{ $item->tanggal_kembali instanceof \Carbon\CarbonInterface || $item->tanggal_kembali instanceof \DateTimeInterface ? $item->tanggal_kembali->translatedFormat('d M Y') : (\Illuminate\Support\Carbon::tryParse($item->tanggal_kembali)?->translatedFormat('d M Y') ?? $item->tanggal_kembali) }}</span>
                                 @else
                                     <span class="text-slate-400 italic text-xs">Belum Dikembalikan</span>
                                 @endif
@@ -101,7 +101,12 @@
                             <td class="px-6 py-4 text-right whitespace-nowrap">
                                 <div class="flex items-center justify-end gap-2">
                                     @if($item->status === 'dipinjam')
-                                        <form action="{{ route('peminjaman.kembalikan', $item->id) }}" method="POST" onsubmit="return confirm('Proses pengembalian buku ini? Stok buku akan otomatis bertambah.');" class="inline-block">
+                                        <form action="{{ route('peminjaman.kembalikan', $item->id) }}" method="POST"
+                                              data-confirm="Proses pengembalian buku '{{ addslashes($item->buku?->judul ?? 'buku ini') }}'? Tanggal pengembalian akan dicatat hari ini dan stok buku fisik bertambah 1."
+                                              data-confirm-title="Konfirmasi Pengembalian Buku"
+                                              data-confirm-variant="primary"
+                                              data-confirm-btn="Ya, Kembalikan Buku"
+                                              class="inline-block">
                                             @csrf
                                             <button type="submit" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-emerald-200 bg-emerald-50 text-xs font-semibold text-emerald-700 hover:bg-emerald-600 hover:text-white transition-colors cursor-pointer">
                                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -112,7 +117,12 @@
                                         </form>
                                     @endif
 
-                                    <form action="{{ route('peminjaman.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Yakin hapus data peminjaman ini?');" class="inline-block">
+                                    <form action="{{ route('peminjaman.destroy', $item->id) }}" method="POST"
+                                          data-confirm="Apakah Anda yakin ingin menghapus catatan riwayat transaksi peminjaman ini?"
+                                          data-confirm-title="Hapus Riwayat Peminjaman"
+                                          data-confirm-variant="danger"
+                                          data-confirm-btn="Ya, Hapus Transaksi"
+                                          class="inline-block">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="inline-flex items-center p-1.5 rounded-lg border border-slate-200 text-xs text-rose-500 hover:bg-rose-50 hover:border-rose-200 transition-colors cursor-pointer" title="Hapus catatan">

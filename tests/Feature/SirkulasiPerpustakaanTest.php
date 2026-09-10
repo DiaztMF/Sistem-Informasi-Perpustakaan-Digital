@@ -66,7 +66,32 @@ test('authenticated user can return a borrowed book and increment stock', functi
 
     $response->assertRedirect(route('peminjaman.index'));
 
+    expect($peminjaman->fresh()->stok ?? null)->toBeNull();
     expect($buku->fresh()->stok)->toBe(3);
     expect($peminjaman->fresh()->status)->toBe('kembali');
     expect($peminjaman->fresh()->tanggal_kembali)->not->toBeNull();
+});
+
+test('authenticated user can view peminjaman index and see records', function () {
+    $user = User::factory()->create();
+    $buku = Buku::factory()->create(['stok' => 5, 'judul' => 'Buku Uji Coba']);
+    $anggota = Anggota::create([
+        'nis' => 'NIS123',
+        'nama' => 'Siswa Penguji',
+        'kelas' => 'XII RPL 1',
+    ]);
+
+    Peminjaman::create([
+        'buku_id' => $buku->id,
+        'anggota_id' => $anggota->id,
+        'tanggal_pinjam' => '2026-09-01',
+        'tanggal_kembali' => '2026-09-05',
+        'status' => 'kembali',
+    ]);
+
+    $response = $this->actingAs($user)->get('/peminjaman');
+
+    $response->assertOk();
+    $response->assertSee('Buku Uji Coba');
+    $response->assertSee('Siswa Penguji');
 });

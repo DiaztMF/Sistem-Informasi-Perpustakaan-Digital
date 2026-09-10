@@ -11,7 +11,7 @@
             <p class="text-sm text-slate-500 mt-1">Daftar siswa terdaftar sebagai anggota peminjam buku perpustakaan.</p>
         </div>
         <div>
-            <a href="{{ route('anggota.create') }}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white font-semibold text-sm rounded-xl shadow-md shadow-brand-500/25 hover:shadow-lg hover:shadow-brand-500/30 transition-all cursor-pointer">
+            <a href="{{ route('anggota.create') }}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl shadow-md shadow-blue-500/20 hover:shadow-lg hover:shadow-blue-500/25 transition-all cursor-pointer">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                 </svg>
@@ -94,7 +94,12 @@
                                         Edit
                                     </a>
 
-                                    <form action="{{ route('anggota.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data anggota \'{{ addslashes($item->nama) }}\'?');" class="inline-block">
+                                    <form action="{{ route('anggota.destroy', $item->id) }}" method="POST"
+                                          data-confirm="Apakah Anda yakin ingin menghapus data anggota '{{ addslashes($item->nama) }}' (NIS: {{ $item->nis }})? Anggota dengan peminjaman buku aktif tidak dapat dihapus."
+                                          data-confirm-title="Hapus Data Anggota"
+                                          data-confirm-variant="danger"
+                                          data-confirm-btn="Ya, Hapus Anggota"
+                                          class="inline-block">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-rose-600 hover:text-white hover:bg-rose-600 hover:border-rose-600 transition-colors cursor-pointer">

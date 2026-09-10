@@ -1,11 +1,11 @@
 # SiPerpus - Sistem Informasi Perpustakaan Digital
 
-Aplikasi manajemen perpustakaan modern berbasis **Laravel 11**, **Laravel Breeze API**, dan **Tailwind CSS**. Dibangun berdasarkan silabus Praktikum Pemrograman Web (Pertemuan 1–8).
+Aplikasi manajemen perpustakaan modern berbasis **Laravel 13**, **Laravel Breeze API**, dan **Tailwind CSS**. Dibangun berdasarkan silabus Praktikum Pemrograman Web (Pertemuan 1–8).
 
 [![PHP](https://img.shields.io/badge/PHP-8.3%20%7C%208.4-777BB4?logo=php&logoColor=white)](https://php.net)
-[![Laravel](https://img.shields.io/badge/Laravel-11%20%2F%2013-FF2D20?logo=laravel&logoColor=white)](https://laravel.com)
+[![Laravel](https://img.shields.io/badge/Laravel-13.x-FF2D20?logo=laravel&logoColor=white)](https://laravel.com)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
-[![Pest Tests](https://img.shields.io/badge/Tests-21%20Passed%20(100%25)-brightgreen?logo=pest)](https://pestphp.com)
+[![Pest Tests](https://img.shields.io/badge/Tests-22%20Passed%20(100%25)-brightgreen?logo=pest)](https://pestphp.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 ---
@@ -49,8 +49,8 @@ Dalam praktikum web atau proyek perkuliahan, aplikasi sering kali menghadapi dil
 
 **Solusi SiPerpus:**
 - Memanfaatkan **Laravel Breeze API** dan **Laravel Sanctum** untuk sistem autentikasi berbasis cookie stateful dan token JSON.
-- Menggunakan antarmuka **Blade + Tailwind CSS + Alpine.js** yang terintegrasi langsung di dalam Laravel. 
-- Hasilnya: Tampilan cepat, modern, tidak memerlukan kompilasi Node terpisah saat didemokan, dan seluruh backend siap dikonsumsi baik via browser maupun API eksternal (Postman/Mobile).
+- Menggunakan antarmuka **Blade + Tailwind CSS + Alpine.js** yang terintegrasi langsung di dalam Laravel tanpa proses kompilasi Node terpisah (*Zero-Build Frontend*).
+- Hasilnya: Tampilan cepat, modern, sangat ringan, dan seluruh backend siap dikonsumsi baik via browser maupun API eksternal (Postman/Mobile).
 
 ---
 
@@ -87,23 +87,25 @@ Dalam praktikum web atau proyek perkuliahan, aplikasi sering kali menghadapi dil
 
 | Komponen | Teknologi | Keterangan |
 |---|---|---|
-| **Backend Framework** | Laravel 11 / 13 | PHP 8.3 / PHP 8.4 |
-| **Autentikasi** | Laravel Breeze API | Laravel Sanctum stateful cookies |
-| **Basis Data** | MySQL / MariaDB | Melalui XAMPP |
+| **Backend Framework** | Laravel 13 (v13.30.1) | PHP 8.3 / PHP 8.4 (Terpasang PHP 8.4.14) |
+| **Autentikasi** | Laravel Breeze API & Sanctum | Stateful cookies & JSON response |
+| **Basis Data** | MySQL / MariaDB | Melalui XAMPP / Native MySQL |
 | **Styling & UI** | Tailwind CSS CDN | Tipografi Google Font *Plus Jakarta Sans* |
-| **Interaktivitas UI** | Alpine.js | Live search, filter status, mobile menu |
-| **Test Runner** | Pest PHP 5 | 21 Feature & Unit tests |
-| **Code Formatter** | Laravel Pint | Standar PSR-12 / Laravel |
+| **Interaktivitas UI** | Alpine.js 3.14 (CDN) | Live search, filter status, mobile menu |
+| **Test Runner** | Pest PHP 5.1.4 & PHPUnit 13.3 | 22 Feature & Unit tests (66 assertions) |
+| **Code Formatter** | Laravel Pint 1.27 | Standar PSR-12 / Laravel Code Style |
+| **Frontend Tooling** | Zero-Build | Tidak memerlukan Node.js / NPM build step |
 
 ---
 
 ## Persyaratan Sistem
 
 Pastikan komputer Anda telah terinstal:
-- **PHP** versi 8.2 atau lebih baru (`php -v`)
+- **PHP** versi 8.3 atau 8.4 (`php -v` — wajib >= 8.3 untuk Laravel 13, saat ini berjalan di PHP 8.4)
 - **Composer** versi 2.x (`composer -v`)
 - **XAMPP** (dengan service Apache dan MySQL aktif)
-- Web Browser modern (Google Chrome, Microsoft Edge, Mozilla Firefox)
+- **Web Browser** modern (Google Chrome, Microsoft Edge, Mozilla Firefox)
+- *(Catatan: Node.js & npm **TIDAK diperlukan** karena styling menggunakan CDN langsung)*
 
 ---
 
@@ -174,7 +176,13 @@ INFO  Seeding database.
 ```
 
 ### 8. Jalankan Server Pengembangan Lokal
+Jalankan server aplikasi menggunakan salah satu perintah berikut:
+
 ```bash
+# Opsi 1: Menggunakan script dev composer (Laravel 13 Dev Server)
+composer run dev
+
+# Opsi 2: Menggunakan Artisan serve konvensional
 php artisan serve
 ```
 
@@ -233,8 +241,9 @@ Gunakan akun petugas berikut untuk masuk ke dalam sistem:
 
 ## Daftar Route & Endpoint
 
-Aplikasi ini mendefinisikan rute web dan API yang bersih:
+Aplikasi ini mendefinisikan rute web, Breeze API, dan resource CRUD:
 
+### 1. Autentikasi Petugas & API (Laravel Breeze API & Sanctum)
 | Method | URI | Nama Route | Middleware | Deskripsi |
 |---|---|---|---|---|
 | `GET` | `/` | - | - | Pengalihan awal ke `buku.index` |
@@ -243,23 +252,40 @@ Aplikasi ini mendefinisikan rute web dan API yang bersih:
 | `GET` | `/register` | `register.view` | `guest` | Tampilan registrasi petugas baru |
 | `POST` | `/register` | `register` | `guest` | Proses pembuatan akun petugas baru |
 | `POST` | `/logout` | `logout` | `auth` | Menghancurkan sesi aktif (Logout) |
+| `POST` | `/forgot-password` | `password.email` | `guest` | Request tautan reset password |
+| `POST` | `/reset-password` | `password.store` | `guest` | Eksekusi simpan password baru |
+| `GET` | `/verify-email/{id}/{hash}` | `verification.verify` | `auth, signed` | Verifikasi alamat email petugas |
+| `POST` | `/email/verification-notification` | `verification.send` | `auth` | Kirim ulang email verifikasi |
+| `GET` | `/api/user` | - | `auth:sanctum` | Mendapatkan data user login via Sanctum |
+
+### 2. Modul Inventaris Buku (CRUD)
+| Method | URI | Nama Route | Middleware | Deskripsi |
+|---|---|---|---|---|
 | `GET` | `/buku` | `buku.index` | `auth` | Katalog & daftar semua buku |
 | `GET` | `/buku/create` | `buku.create` | `auth` | Formulir tambah buku baru |
 | `POST` | `/buku` | `buku.store` | `auth` | Menyimpan buku baru ke database |
 | `GET` | `/buku/{buku}/edit` | `buku.edit` | `auth` | Formulir ubah data buku |
 | `PUT` | `/buku/{buku}` | `buku.update` | `auth` | Menyimpan perubahan data buku |
 | `DELETE` | `/buku/{buku}` | `buku.destroy` | `auth` | Menghapus data buku |
+
+### 3. Modul Anggota Siswa (CRUD)
+| Method | URI | Nama Route | Middleware | Deskripsi |
+|---|---|---|---|---|
 | `GET` | `/anggota` | `anggota.index` | `auth` | Daftar anggota perpustakaan |
 | `GET` | `/anggota/create` | `anggota.create` | `auth` | Formulir tambah anggota |
 | `POST` | `/anggota` | `anggota.store` | `auth` | Menyimpan data anggota baru |
-| `GET` | `/anggota/{anggota}/edit`| `anggota.edit` | `auth` | Formulir edit anggota |
-| `PUT` | `/anggota/{anggota}` | `anggota.update` | `auth` | Memperbarui data anggota |
-| `DELETE` | `/anggota/{anggota}` | `anggota.destroy` | `auth` | Menghapus data anggota |
+| `GET` | `/anggota/{anggota}/edit`| `anggota.edit` | `auth` | Formulir edit anggota *(parameter route: `{anggotum}`)* |
+| `PUT` | `/anggota/{anggota}` | `anggota.update` | `auth` | Memperbarui data anggota *(parameter route: `{anggotum}`)* |
+| `DELETE` | `/anggota/{anggota}` | `anggota.destroy` | `auth` | Menghapus data anggota *(parameter route: `{anggotum}`)* |
+
+### 4. Modul Sirkulasi Peminjaman & Pengembalian
+| Method | URI | Nama Route | Middleware | Deskripsi |
+|---|---|---|---|---|
 | `GET` | `/peminjaman` | `peminjaman.index` | `auth` | Daftar riwayat peminjaman buku |
 | `GET` | `/peminjaman/create` | `peminjaman.create` | `auth` | Formulir transaksi peminjaman |
 | `POST` | `/peminjaman` | `peminjaman.store` | `auth` | Catat pinjam & potong stok buku |
-| `POST` | `/peminjaman/{id}/kembalikan` | `peminjaman.kembalikan` | `auth` | Pengembalian buku & tambah stok |
-| `DELETE` | `/peminjaman/{id}` | `peminjaman.destroy` | `auth` | Menghapus riwayat transaksi |
+| `POST` | `/peminjaman/{peminjaman}/kembalikan` | `peminjaman.kembalikan` | `auth` | Pengembalian buku & tambah stok |
+| `DELETE` | `/peminjaman/{peminjaman}` | `peminjaman.destroy` | `auth` | Menghapus riwayat transaksi *(auto restok jika aktif)* |
 
 ---
 
@@ -291,14 +317,22 @@ Sudah Login? ── Tidak ──► [Halaman /login] ── Auth Breeze API ─�
 
 ## Menjalankan Pengujian Otomatis
 
-Proyek ini telah diverifikasi menggunakan suite pengujian otomatis **Pest PHP** dengan total 21 pengujian fitur:
+Proyek ini telah diverifikasi penuh menggunakan suite pengujian otomatis **Pest PHP 5.1** (berbasis **PHPUnit 13.3**) dengan total **22 pengujian fitur** dan **66 assertions**:
 
-Jalankan perintah berikut di terminal:
+Jalankan perintah pengujian dengan salah satu cara berikut:
+
 ```bash
-vendor/bin/pest
+# Perintah standar Laravel (disarankan untuk semua OS):
+php artisan test
+
+# Atau menggunakan composer test:
+composer test
+
+# Atau langsung mengeksekusi binary Pest di Windows:
+vendor\bin\pest.bat
 ```
 
-Output pengujian:
+Output pengujian yang diharapkan:
 ```text
    PASS  Tests\Unit\ExampleTest
   ✓ that true is true
@@ -339,26 +373,31 @@ Output pengujian:
   ✓ authenticated user can view anggota list
   ✓ authenticated user can borrow a book and decrement stock
   ✓ authenticated user can return a borrowed book and increment stock
+  ✓ authenticated user can view peminjaman index and see records
 
-  Tests:    21 passed (62 assertions)
-  Duration: 2.52s
+  Tests:    22 passed (66 assertions)
+  Duration: 3.69s
 ```
 
 ---
 
 ## Penyelesaian Masalah Umum (Troubleshooting)
 
-### 1. `Database file at path [db_perpus] does not exist (Connection: sqlite)`
-- **Penyebab:** Server dev (`php artisan serve` / `composer run dev`) dinyalakan sebelum konfigurasi `.env` diubah ke MySQL, sehingga server PHP masih memegang state lama.
-- **Solusi:** Hentikan dev server di terminal dengan `Ctrl + C`, jalankan `php artisan optimize:clear`, lalu jalankan kembali `php artisan serve`.
+### 1. `Your Composer dependencies require a PHP version ">= 8.3.0"`
+- **Penyebab:** Versi PHP CLI pada sistem atau XAMPP masih berada di bawah 8.3 (misalnya PHP 8.1 atau 8.2). Laravel 13 mewajibkan minimal PHP 8.3.
+- **Solusi:** Pastikan XAMPP atau PHP terupdate ke PHP 8.3 atau 8.4. Cek versi aktif dengan `php -v`.
 
-### 2. `SQLSTATE[HY000] [2002] Connection refused`
+### 2. `Database file at path [db_perpus] does not exist (Connection: sqlite)`
+- **Penyebab:** Server dev (`php artisan serve` / `composer run dev`) dinyalakan sebelum konfigurasi `.env` diubah ke MySQL, sehingga server PHP masih memegang state lama.
+- **Solusi:** Hentikan dev server di terminal dengan `Ctrl + C`, jalankan `php artisan optimize:clear`, lalu jalankan kembali `php artisan serve` atau `composer run dev`.
+
+### 3. `SQLSTATE[HY000] [2002] Connection refused`
 - **Penyebab:** Service MySQL di XAMPP belum menyala.
 - **Solusi:** Buka XAMPP Control Panel dan pastikan modul MySQL dalam status **Running** (indikator hijau).
 
-### 3. Halaman Tampil Tanpa Style (CSS Berantakan)
-- **Penyebab:** Koneksi internet terputus saat memuat Tailwind CSS CDN.
-- **Solusi:** Pastikan perangkat Anda terhubung ke internet saat membuka aplikasi di browser.
+### 4. Halaman Tampil Tanpa Style (CSS Berantakan)
+- **Penyebab:** Koneksi internet terputus saat memuat CDN Tailwind CSS dan Google Fonts.
+- **Solusi:** Pastikan perangkat Anda terhubung ke internet saat membuka aplikasi di browser karena frontend menggunakan arsitektur *Zero-Build CDN*.
 
 ---
 
