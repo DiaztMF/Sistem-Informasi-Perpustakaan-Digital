@@ -91,6 +91,14 @@
                                 Peminjaman Buku
                             </div>
                         </a>
+                        <a href="{{ route('laporan.index') }}" class="px-3 py-2 rounded-lg text-sm font-semibold transition-colors {{ request()->routeIs('laporan.*') ? 'bg-brand-50 text-brand-700 font-bold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
+                            <div class="flex items-center gap-1.5">
+                                <svg class="w-4 h-4 {{ request()->routeIs('laporan.*') ? 'text-brand-600' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                Laporan
+                            </div>
+                        </a>
                     </nav>
                 </div>
 
@@ -137,6 +145,9 @@
             </a>
             <a href="{{ route('peminjaman.index') }}" class="block px-3 py-2 rounded-lg text-base font-semibold {{ request()->routeIs('peminjaman.*') ? 'bg-brand-50 text-brand-700' : 'text-slate-600' }}">
                 Peminjaman Buku
+            </a>
+            <a href="{{ route('laporan.index') }}" class="block px-3 py-2 rounded-lg text-base font-semibold {{ request()->routeIs('laporan.*') ? 'bg-brand-50 text-brand-700' : 'text-slate-600' }}">
+                Laporan
             </a>
             @auth
                 <div class="pt-3 border-t border-slate-100 flex items-center justify-between">

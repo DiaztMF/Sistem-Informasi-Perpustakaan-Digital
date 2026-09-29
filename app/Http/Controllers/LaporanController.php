@@ -18,7 +18,7 @@ class LaporanController extends Controller
             ->get();
 
         $durasi = $pinjaman->map(
-            fn (Peminjaman $p) => $p->tanggal_pinjam->diffInDays(now())
+            fn (Peminjaman $p) => (int) $p->tanggal_pinjam->diffInDays(now())
         );
 
         $terlama = $pinjaman->sortBy(
@@ -31,7 +31,7 @@ class LaporanController extends Controller
             'total_peminjam_unik' => $pinjaman->unique('anggota_id')->count(),
             'rata_rata_hari' => round($durasi->avg() ?? 0, 1),
             'durasi_terlama_hari' => $terlama
-                ? $terlama->tanggal_pinjam->diffInDays(now())
+                ? (int) $terlama->tanggal_pinjam->diffInDays(now())
                 : 0,
             'buku_terlama_judul' => $terlama?->buku?->judul,
         ]);
