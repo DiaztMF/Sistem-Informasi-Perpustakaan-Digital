@@ -476,7 +476,7 @@
         async function executeLogout() {
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
             try {
-                await fetch('{{ route('logout') }}', {
+                await fetch('/logout', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -485,7 +485,7 @@
                     }
                 });
             } finally {
-                window.location.href = '{{ route('login') }}';
+                window.location.href = '/login';
             }
         }
     </script>

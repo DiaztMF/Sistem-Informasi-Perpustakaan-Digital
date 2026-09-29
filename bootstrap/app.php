@@ -15,6 +15,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Trust Vercel / FrankenPHP reverse proxy so Laravel detects HTTPS
+        // from X-Forwarded-Proto headers (fixes mixed-content + secure cookies).
+        $middleware->trustProxies(at: '*');
+
         $middleware->api(prepend: [
             EnsureFrontendRequestsAreStateful::class,
         ]);

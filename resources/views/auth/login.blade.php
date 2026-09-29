@@ -178,7 +178,7 @@
                 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
                 // 2. Kirim kredensial ke endpoint Breeze API: POST /login
-                const response = await fetch('{{ route('login') }}', {
+                const response = await fetch('/login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -194,7 +194,7 @@
 
                 if (response.ok) {
                     btnText.textContent = 'Berhasil! Mengalihkan...';
-                    window.location.href = '{{ route('buku.index') }}';
+                    window.location.href = '/buku';
                 } else {
                     const data = await response.json().catch(() => ({}));
                     let msg = data.message || 'Email atau kata sandi tidak valid.';

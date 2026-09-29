@@ -154,7 +154,7 @@
                 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
                 // 2. Kirim pendaftaran ke Breeze API: POST /register
-                const response = await fetch('{{ route('register') }}', {
+                const response = await fetch('/register', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -171,7 +171,7 @@
 
                 if (response.ok) {
                     btnText.textContent = 'Pendaftaran berhasil! Mengalihkan...';
-                    window.location.href = '{{ route('buku.index') }}';
+                    window.location.href = '/buku';
                 } else {
                     const data = await response.json().catch(() => ({}));
                     let msg = data.message || 'Gagal mendaftar.';
