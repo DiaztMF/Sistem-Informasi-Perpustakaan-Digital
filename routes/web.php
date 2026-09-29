@@ -9,6 +9,10 @@ Route::get('/', function () {
     return redirect()->route('buku.index');
 });
 
+Route::get('/health', function () {
+    return response()->json(['status' => 'ok']);
+});
+
 Route::middleware('guest')->group(function () {
     Route::get('/login', function () {
         return view('auth.login');
