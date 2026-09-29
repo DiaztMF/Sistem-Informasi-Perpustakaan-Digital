@@ -13,19 +13,33 @@ class BukuController extends Controller
     public function index(Request $request)
     {
         $search = $request->string('search')->trim()->value();
+        $ketersediaan = $request->string('ketersediaan')->trim()->value();
+        if (! in_array($ketersediaan, ['tersedia', 'habis'], true)) {
+            $ketersediaan = 'all';
+        }
 
-        $buku = Buku::query()
+        $query = Buku::query()
             ->when($search, function ($query, $search) {
-                $query->where('judul', 'like', "%{$search}%")
-                    ->orWhere('pengarang', 'like', "%{$search}%")
-                    ->orWhere('kode_buku', 'like', "%{$search}%")
-                    ->orWhere('penerbit', 'like', "%{$search}%");
+                $query->where(function ($q) use ($search) {
+                    $q->where('judul', 'like', "%{$search}%")
+                        ->orWhere('pengarang', 'like', "%{$search}%")
+                        ->orWhere('kode_buku', 'like', "%{$search}%")
+                        ->orWhere('penerbit', 'like', "%{$search}%");
+                });
             })
-            ->latest()
-            ->paginate(8)
-            ->withQueryString();
+            ->when($ketersediaan === 'tersedia', fn ($query) => $query->where('stok', '>', 0))
+            ->when($ketersediaan === 'habis', fn ($query) => $query->where('stok', '<=', 0));
 
-        return view('buku.index', compact('buku'));
+        $buku = (clone $query)->latest()->paginate(8)->withQueryString();
+
+        $stats = [
+            'total_judul' => Buku::count(),
+            'total_stok' => (int) Buku::sum('stok'),
+            'tersedia' => Buku::where('stok', '>', 0)->count(),
+            'habis' => Buku::where('stok', '<=', 0)->count(),
+        ];
+
+        return view('buku.index', compact('buku', 'stats', 'search', 'ketersediaan'));
     }
 
     /**

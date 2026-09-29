@@ -3,23 +3,7 @@
 @section('title', 'Katalog Data Buku')
 
 @section('content')
-<div x-data="{ 
-    search: '', 
-    statusFilter: 'all',
-    matches(item) {
-        const matchesSearch = !this.search || 
-            item.judul.toLowerCase().includes(this.search.toLowerCase()) ||
-            item.kode.toLowerCase().includes(this.search.toLowerCase()) ||
-            item.pengarang.toLowerCase().includes(this.search.toLowerCase()) ||
-            item.penerbit.toLowerCase().includes(this.search.toLowerCase());
-        
-        const matchesStatus = this.statusFilter === 'all' || 
-            (this.statusFilter === 'tersedia' && item.stok > 0) ||
-            (this.statusFilter === 'habis' && item.stok <= 0);
-
-        return matchesSearch && matchesStatus;
-    }
-}">
+<div>
 
     <!-- Page Header & Action -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
@@ -48,7 +32,7 @@
             </div>
             <div>
                 <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Judul</p>
-                <h3 class="text-2xl font-bold text-slate-900 mt-0.5">{{ $buku->count() }}</h3>
+                <h3 class="text-2xl font-bold text-slate-900 mt-0.5">{{ $stats['total_judul'] }}</h3>
             </div>
         </div>
 
@@ -61,7 +45,7 @@
             </div>
             <div>
                 <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Stok</p>
-                <h3 class="text-2xl font-bold text-slate-900 mt-0.5">{{ $buku->sum('stok') }}</h3>
+                <h3 class="text-2xl font-bold text-slate-900 mt-0.5">{{ $stats['total_stok'] }}</h3>
             </div>
         </div>
 
@@ -74,7 +58,7 @@
             </div>
             <div>
                 <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Buku Siap Pinjam</p>
-                <h3 class="text-2xl font-bold text-slate-900 mt-0.5">{{ $buku->where('stok', '>', 0)->count() }}</h3>
+                <h3 class="text-2xl font-bold text-slate-900 mt-0.5">{{ $stats['tersedia'] }}</h3>
             </div>
         </div>
 
@@ -87,7 +71,7 @@
             </div>
             <div>
                 <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Stok Kosong</p>
-                <h3 class="text-2xl font-bold text-slate-900 mt-0.5">{{ $buku->where('stok', '<=', 0)->count() }}</h3>
+                <h3 class="text-2xl font-bold text-slate-900 mt-0.5">{{ $stats['habis'] }}</h3>
             </div>
         </div>
     </div>
@@ -96,48 +80,44 @@
     <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs mb-6">
         <div class="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
             <!-- Search Input -->
-            <div class="relative flex-1">
+            <form action="{{ route('buku.index') }}" method="GET" class="relative flex-1">
                 <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                     </svg>
                 </div>
-                <input 
-                    type="text" 
-                    x-model="search"
-                    placeholder="Cari berdasarkan judul, pengarang, kode buku, atau penerbit..." 
+                <input
+                    type="text"
+                    name="search"
+                    value="{{ $search }}"
+                    placeholder="Cari berdasarkan judul, pengarang, kode buku, atau penerbit..."
                     class="w-full pl-10 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all text-slate-800 placeholder-slate-400"
                 >
-            </div>
+                <input type="hidden" name="ketersediaan" value="{{ $ketersediaan }}">
+            </form>
 
             <!-- Filter Status -->
             <div class="flex items-center gap-2">
                 <span class="text-xs font-semibold text-slate-500 shrink-0">Filter:</span>
                 <div class="inline-flex rounded-xl bg-slate-100 p-1">
-                    <button 
-                        type="button" 
-                        @click="statusFilter = 'all'" 
-                        :class="statusFilter === 'all' ? 'bg-white text-slate-800 shadow-2xs font-bold' : 'text-slate-500 hover:text-slate-800'"
-                        class="px-3 py-1 text-xs rounded-lg transition-all"
+                    <a
+                        href="{{ route('buku.index', ['search' => $search, 'ketersediaan' => 'all']) }}"
+                        class="px-3 py-1 text-xs rounded-lg transition-all {{ $ketersediaan === 'all' ? 'bg-white text-slate-800 shadow-2xs font-bold' : 'text-slate-500 hover:text-slate-800' }}"
                     >
                         Semua
-                    </button>
-                    <button 
-                        type="button" 
-                        @click="statusFilter = 'tersedia'" 
-                        :class="statusFilter === 'tersedia' ? 'bg-white text-emerald-700 shadow-2xs font-bold' : 'text-slate-500 hover:text-slate-800'"
-                        class="px-3 py-1 text-xs rounded-lg transition-all"
+                    </a>
+                    <a
+                        href="{{ route('buku.index', ['search' => $search, 'ketersediaan' => 'tersedia']) }}"
+                        class="px-3 py-1 text-xs rounded-lg transition-all {{ $ketersediaan === 'tersedia' ? 'bg-white text-emerald-700 shadow-2xs font-bold' : 'text-slate-500 hover:text-slate-800' }}"
                     >
                         Tersedia
-                    </button>
-                    <button 
-                        type="button" 
-                        @click="statusFilter = 'habis'" 
-                        :class="statusFilter === 'habis' ? 'bg-white text-rose-700 shadow-2xs font-bold' : 'text-slate-500 hover:text-slate-800'"
-                        class="px-3 py-1 text-xs rounded-lg transition-all"
+                    </a>
+                    <a
+                        href="{{ route('buku.index', ['search' => $search, 'ketersediaan' => 'habis']) }}"
+                        class="px-3 py-1 text-xs rounded-lg transition-all {{ $ketersediaan === 'habis' ? 'bg-white text-rose-700 shadow-2xs font-bold' : 'text-slate-500 hover:text-slate-800' }}"
                     >
                         Habis
-                    </button>
+                    </a>
                 </div>
             </div>
         </div>
@@ -159,18 +139,9 @@
                 </thead>
                 <tbody class="divide-y divide-slate-100">
                     @forelse($buku as $index => $item)
-                        <tr 
-                            x-show="matches({ 
-                                judul: '{{ addslashes($item->judul) }}', 
-                                kode: '{{ addslashes($item->kode_buku) }}', 
-                                pengarang: '{{ addslashes($item->pengarang) }}', 
-                                penerbit: '{{ addslashes($item->penerbit) }}', 
-                                stok: {{ $item->stok }} 
-                            })"
-                            class="hover:bg-slate-50/60 transition-colors"
-                        >
+                        <tr class="hover:bg-slate-50/60 transition-colors">
                             <td class="px-6 py-4 text-center font-medium text-slate-400 text-xs">
-                                {{ $index + 1 }}
+                                {{ $buku->firstItem() + $index }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200/80 font-mono">
