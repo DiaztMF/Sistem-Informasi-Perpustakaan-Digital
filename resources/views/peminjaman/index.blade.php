@@ -49,6 +49,7 @@
                         <th scope="col" class="px-6 py-4">Peminjam (Siswa)</th>
                         <th scope="col" class="px-6 py-4">Tanggal Pinjam</th>
                         <th scope="col" class="px-6 py-4">Tanggal Kembali</th>
+                        <th scope="col" class="px-6 py-4 text-center">Lama</th>
                         <th scope="col" class="px-6 py-4 text-center">Status</th>
                         <th scope="col" class="px-6 py-4 text-right">Aksi</th>
                     </tr>
@@ -84,6 +85,9 @@
                                 @else
                                     <span class="text-slate-400 italic text-xs">Belum Dikembalikan</span>
                                 @endif
+                            </td>
+                            <td class="px-6 py-4 text-center whitespace-nowrap text-xs font-semibold text-slate-500">
+                                {{ (int) $item->tanggal_pinjam->diffInDays($item->tanggal_kembali ?? now()) }} hari
                             </td>
                             <td class="px-6 py-4 text-center whitespace-nowrap">
                                 @if($item->status === 'dipinjam')
@@ -136,7 +140,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-12 text-center text-slate-400">
+                                <td colspan="8" class="px-6 py-12 text-center text-slate-400">
                                 Belum ada riwayat transaksi peminjaman buku.
                             </td>
                         </tr>
